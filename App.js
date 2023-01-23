@@ -5,7 +5,7 @@ import { BarCodeScanner } from 'expo-barcode-scanner';
 import * as Permissions from 'expo-permissions';
 import * as MediaLibrary from 'expo-media-library';
 import { manipulateAsync, FlipType, SaveFormat } from 'expo-image-manipulator';
-
+import * as ImagePicker from 'expo-image-picker';
 
 
 export default function App() {
@@ -43,18 +43,30 @@ export default function App() {
       const pic = await mycamera.takePictureAsync()
       console.log("pic", pic);
       const asset = await MediaLibrary.createAssetAsync(pic.uri);
-      const manipResult = await manipulateAsync(
-        pic.uri,
-        [{ crop: {
-          height: e.boundingBox.size.height, 
-          originX: e.boundingBox.origin.x, 
-          originY: e.boundingBox.origin.y, 
-          width: e.boundingBox.size.width,
-        } }],
-        { compress: 1, format: SaveFormat.PNG }
-      );
-      console.log("Cropped Res", manipResult);
-      const cropAsset = await MediaLibrary.createAssetAsync(manipResult.uri);
+      console.log("Asset in picture", asset);
+      // let result = await ImagePicker.launchImageLibraryAsync({
+      //   allowsEditing: false,
+      //   quality: 1,
+      // });
+      const response = await BarCodeScanner.scanFromURLAsync(asset.uri);
+      console.log("Scanned from image", response);
+      const res = response[0];
+      if(response.length > 0) {
+        const manipResult = await manipulateAsync(
+          asset.uri,
+          [{ crop: {
+            height: res.bounds.size.height, 
+            originX: res.bounds.origin.x, 
+            originY: res.bounds.origin.y, 
+            width: res.bounds.size.width,
+          } }],
+          { compress: 1, format: SaveFormat.PNG }
+        );
+        console.log("Cropped Res", manipResult);
+        const cropAsset = await MediaLibrary.createAssetAsync(manipResult.uri);
+      } else {
+        alert("Image not scaaned");
+      }
     }
   }
 
