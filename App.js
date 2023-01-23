@@ -14,12 +14,12 @@ export default function App() {
   const [scanned, setScanned] = useState(false);
   const [permission, requestPermission] = Camera.useCameraPermissions();
 
-  // useEffect(async ()=>{
-  //   const perm = await Permissions.askAsync(Permissions.MEDIA_LIBRARY);
-  //   if (perm.status != 'granted') {
-  //     return;
-  //   }
-  // },[]);
+  useEffect(async ()=>{
+    const perm = await Permissions.askAsync(Permissions.MEDIA_LIBRARY);
+    if (perm.status != 'granted') {
+      return;
+    }
+  },[]);
 
   if (!permission) {
     // Camera permissions are still loading
@@ -64,6 +64,8 @@ export default function App() {
         );
         console.log("Cropped Res", manipResult);
         const cropAsset = await MediaLibrary.createAssetAsync(manipResult.uri);
+        console.log("cropAsset", cropAsset);
+        alert("Cropped qr image saved at " + cropAsset.uri);
       } else {
         alert("Image not scaaned");
       }
@@ -78,19 +80,58 @@ export default function App() {
       }}
       onBarCodeScanned={scanned ? undefined : handleBarcode}
       ref={(ref) => { setCamera(ref) }}
-      style={styles.camera} type={type}>
-        {scanned &&
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.button} onPress={() => setScanned(false)}>
-            <Text style={styles.text}>Tap to scan again</Text>
-          </TouchableOpacity>
-        </View>}
+      style={[StyleSheet.absoluteFill, styles.container]}>
+        <View style={styles.layerTop} />
+        <View style={styles.layerCenter}>
+          <View style={styles.layerLeft} />
+          <View style={styles.focused} />
+          <View style={styles.layerRight} />
+        </View>
+        <View style={styles.layerBottom}>
+          {scanned &&
+          <View style={stylesOld.buttonContainer}>
+            <TouchableOpacity style={stylesOld.button} onPress={() => setScanned(false)}>
+              <Text style={stylesOld.text}>Tap to scan again</Text>
+            </TouchableOpacity>
+          </View>}
+        </View>
       </Camera>
     </View>
   );
 }
 
+const opacity = 'rgba(0, 0, 0, .6)';
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    flexDirection: 'column'
+  },
+  layerTop: {
+    flex: 1.5,
+    backgroundColor: opacity
+  },
+  layerCenter: {
+    flex: 1,
+    flexDirection: 'row'
+  },
+  layerLeft: {
+    flex: 1,
+    backgroundColor: opacity
+  },
+  focused: {
+    flex: 10
+  },
+  layerRight: {
+    flex: 1,
+    backgroundColor: opacity
+  },
+  layerBottom: {
+    flex: 1.5,
+    backgroundColor: opacity
+  },
+});
+
+const stylesOld = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
@@ -101,8 +142,6 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flex: 1,
     flexDirection: 'row',
-    backgroundColor: 'transparent',
-    margin: 64,
   },
   button: {
     flex: 1,
