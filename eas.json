@@ -1,17 +1,18 @@
 {
     "build": {
-      "preview": {
-        "android": {
-          "buildType": "apk"
-        }
-      },
-      "develop": {
-        "android": {
-          "developmentClient": false,
-          "gradleCommand": ":app:assembleDebug"
-        }
-      },
-      "production": {}
+        "develop": {
+            "developmentClient": false,
+            "distribution": "internal",
+            "android": {
+                "gradleCommand": ":app:assembleDebug"
+            },
+            "ios": {
+                "buildConfiguration": "Debug"
+            }
+        },
+        "preview": {
+            "distribution": "internal"
+        },
+        "production": {}
     }
-  }
-  
+}
