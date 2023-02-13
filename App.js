@@ -6,6 +6,8 @@ import * as Permissions from 'expo-permissions';
 import * as MediaLibrary from 'expo-media-library';
 import { manipulateAsync, FlipType, SaveFormat } from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
+import { postQrImage, testApi } from './api';
+import customPrompt from './customPrompt';
 
 
 export default function App() {
@@ -13,17 +15,25 @@ export default function App() {
   const [mycamera, setCamera] = useState();
   const [scanned, setScanned] = useState(false);
   const [permission, requestPermission] = Camera.useCameraPermissions();
+  const [permissionResponse, requestPermissionFile] = MediaLibrary.usePermissions();
+  console.log(permission, permissionResponse);
 
-  useEffect(async ()=>{
-    const perm = await Permissions.askAsync(Permissions.MEDIA_LIBRARY);
-    if (perm.status != 'granted') {
-      return;
-    }
-  },[]);
+  // useEffect(async ()=>{
+  //   const perm = await Permissions.askAsync(Permissions.MEDIA_LIBRARY);
+  //   if (perm.status != 'granted') {
+  //     return;
+  //   }
+  // },[]);
 
   if (!permission) {
     // Camera permissions are still loading
     return <View />;
+  }
+
+  const reqPerm = () => {
+    requestPermission();
+    console.log("Premision of file")
+    requestPermissionFile()
   }
 
   if (!permission.granted) {
@@ -31,7 +41,7 @@ export default function App() {
     return (
       <View style={styles.container}>
         <Text style={{ textAlign: 'center' }}>We need your permission to show the camera</Text>
-        <Button onPress={requestPermission} title="grant permission" />
+        <Button onPress={(e)=> {reqPerm(e)}} title="grant permission" />
       </View>
     );
   }
@@ -44,10 +54,6 @@ export default function App() {
       console.log("pic", pic);
       const asset = await MediaLibrary.createAssetAsync(pic.uri);
       console.log("Asset in picture", asset);
-      // let result = await ImagePicker.launchImageLibraryAsync({
-      //   allowsEditing: false,
-      //   quality: 1,
-      // });
       const response = await BarCodeScanner.scanFromURLAsync(asset.uri);
       console.log("Scanned from image", response);
       const res = response[0];
@@ -65,7 +71,8 @@ export default function App() {
         console.log("Cropped Res", manipResult);
         const cropAsset = await MediaLibrary.createAssetAsync(manipResult.uri);
         console.log("cropAsset", cropAsset);
-        alert("Cropped qr image saved at " + cropAsset.uri);
+        const qvcode = await customPrompt();
+        postQrImage(qvcode, cropAsset)
       } else {
         alert("Image not scaaned");
       }
