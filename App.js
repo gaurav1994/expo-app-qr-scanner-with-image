@@ -7,7 +7,7 @@ import * as MediaLibrary from 'expo-media-library';
 import { manipulateAsync, FlipType, SaveFormat } from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
 import { postQrImage, testApi } from './api';
-import customPrompt from './customPrompt';
+import {customPrompt} from './customPrompt';
 
 
 export default function App() {
